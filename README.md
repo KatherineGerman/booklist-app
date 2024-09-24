@@ -20,19 +20,21 @@ This project is a simple Book List App built using Vanilla JavaScript. The app a
 ## How to Run
 
 1. Clone this repository:
+   
    ```bash
    git clone https://github.com/katherinegerman/booklist-app.git
 
- 2. Open the index.html file in a web browser to view and use the app.
+ 3. Open the index.html file in a web browser to view and use the app.
     
 ## How It Works
 
-Fill out the book details in the form (title, author, and ISBN).
-Click the "Add Book" button to add the book to the list.
-Each book entry has a "Delete" button. Click this button to remove a book from the list.
-Books are stored in the browser's localStorage so that the list is preserved after refreshing the page.
+- Fill out the book details in the form (title, author, and ISBN).
+- Click the "Add Book" button to add the book to the list.
+- Each book entry has a "Delete" button. Click this button to remove a book from the list.
+- Books are stored in the browser's localStorage so that the list is preserved after refreshing the page.
 
-##Future Improvements
-Add edit functionality to allow users to update book details.
-Implement search functionality to find books by title or author.
-Improve UI/UX with better design and visual feedback.
+## Future Improvements
+
+- Add edit functionality to allow users to update book details.
+- Implement search functionality to find books by title or author.
+- Improve UI/UX with better design and visual feedback.
