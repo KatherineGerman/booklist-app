@@ -1,6 +1,6 @@
-#Javascript: Book List App
+## Javascript: Book List App
 
-#Overview
+## Overview
 This project is a simple Book List App built using Vanilla JavaScript. The app allows users to add and delete books from a list. The main goal of this project was to improve my knowled of JavaScript by learning how to work with the DOM, handle events, and implement data storage.
 
 ## Features
@@ -25,13 +25,14 @@ This project is a simple Book List App built using Vanilla JavaScript. The app a
 
  2. Open the index.html file in a web browser to view and use the app.
     
-How It Works
+## How It Works
+
 Fill out the book details in the form (title, author, and ISBN).
 Click the "Add Book" button to add the book to the list.
 Each book entry has a "Delete" button. Click this button to remove a book from the list.
 Books are stored in the browser's localStorage so that the list is preserved after refreshing the page.
 
-Future Improvements
+##Future Improvements
 Add edit functionality to allow users to update book details.
 Implement search functionality to find books by title or author.
 Improve UI/UX with better design and visual feedback.
