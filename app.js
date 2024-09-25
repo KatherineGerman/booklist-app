@@ -12,7 +12,6 @@ class Book {
 
 class UI {
     static displayBooks() {
-        
      const books = Store.getBooks();
      
       books.forEach((book) => UI.addBookToList(book));
@@ -65,12 +64,14 @@ class UI {
 
 class Store {
     static getBooks() {
-
         let books;
-        if(localStorage.getItem('books')=== null) {
-            books = [];
-        } else{
-            books = JSON.parse(localStorage.getItem('books'));
+        try {
+            books = JSON.parse(localStorage.getItem('books')) || [];
+            if (!Array.isArray(books)) {
+                books = [];  // Si lo que está en localStorage no es un array, reinicia como array vacío.
+            }
+        } catch (error) {
+            books = [];  // Si hay algún error en el parseo, reinicia como array vacío.
         }
 
         return books;
@@ -78,24 +79,20 @@ class Store {
     static addBook(book) {
 
         const books = Store.getBooks();
-
         books.push(book);
-
         localStorage.setItem('books', JSON.stringify(books));
     }
 
     static removeBook(isbn) {
-
-        const books = Store.getBooks();
+     const books = Store.getBooks();
 
         books.forEach((book, index) => {
             if(book.isbn === isbn){
-                book.splice(index, 1)
-
+                books.splice(index, 1)
             }
         });
 
-        localStorage.setItem('books', JSON.stringify(books))
+        localStorage.setItem('books', JSON.stringify(books));
     }
 }
 
@@ -129,7 +126,7 @@ document.querySelector('#book-form').addEventListener('submit',(e) =>{
 
     const book = new Book(title, author, isbn);
 
-    console.log(book);
+    //console.log(book);
 
     //Add Book to UI
 
@@ -149,11 +146,17 @@ document.querySelector('#book-form').addEventListener('submit',(e) =>{
     
 });
 
+
 //Event: Remove a Book
 
 document.querySelector('#book-list').addEventListener('click',(e) =>{
+   
+   //Remove book from UI
     UI.deleteBook(e.target);
 
+    //Remove book from store
+
+    Store.removeBook(e.target.parentElement.previousElementSibling.textContent);
      //Show deleted message
      UI.showAlert('Book removed', 'success');
 })
