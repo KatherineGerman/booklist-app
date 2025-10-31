@@ -8,6 +8,7 @@ This project is a simple Book List App built using Vanilla JavaScript. The app a
 
 - **Add a Book**: Users can add a book by providing details like the title, author, and ISBN.
 - **Delete a Book**: Users can remove a book from the list with the click of a button.
+- **Update a Book**: Users can edit or update a book from the list with the click of a button.
 - **Store Data**: I learned how to add and retrieve data from local storage, allowing books to persist across page reloads.
 
 ## What I Learned
@@ -33,9 +34,9 @@ This project is a simple Book List App built using Vanilla JavaScript. The app a
 - Click the "Add Book" button to add the book to the list.
 - Each book entry has a "Delete" button. Click this button to remove a book from the list.
 - Books are stored in the browser's localStorage so that the list is preserved after refreshing the page.
+- Click the 'Pencil' Icon to edit a book.
 
 ## Future Improvements
 
-- Add edit functionality to allow users to update book details.
 - Implement search functionality to find books by title or author.
 - Improve UI/UX with better design and visual feedback.
