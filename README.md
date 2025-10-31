@@ -1,4 +1,5 @@
 ## Javascript: Book List App
+<img width="1903" height="771" alt="image" src="https://github.com/user-attachments/assets/a6db0329-d419-4003-b728-6918f5dcee55" />
 
 ## Overview
 This project is a simple Book List App built using Vanilla JavaScript. The app allows users to add and delete books from a list. The main goal of this project was to improve my knowled of JavaScript by learning how to work with the DOM, handle events, and implement data storage.
