@@ -11,11 +11,17 @@ class Book {
 class UI {
     static displayBooks() {
         const books = Store.getBooks();
+
+        // Limpiar la lista antes de volver a renderizar (evita duplicados)
+        const list = document.querySelector('#book-list');
+        list.innerHTML = '';
+
         books.forEach((book) => UI.addBookToList(book));
     }
 
     static addBookToList(book) {
         const list = document.querySelector('#book-list');
+        if (!list) return;
 
         const row = document.createElement('tr');
 
@@ -31,8 +37,10 @@ class UI {
     }
 
     static deleteBook(el) {
-        if (el.classList.contains('delete')) {
-            el.parentElement.parentElement.remove();
+        const deleteBtn = el.closest('.delete');
+        if (deleteBtn) {
+            const row = deleteBtn.closest('tr');
+            if (row) row.remove();
         }
     }
 
@@ -41,7 +49,7 @@ class UI {
         document.querySelector('#author').value = row.children[1].textContent;
         document.querySelector('#isbn').value = row.children[2].textContent;
 
-        // Set 'data-editing' attribute to track the book being edited by ISBN
+        // Guardar el ISBN original en data-editing
         document.querySelector('#book-form').setAttribute('data-editing', row.children[2].textContent);
     }
 
@@ -49,12 +57,17 @@ class UI {
         const div = document.createElement('div');
         div.className = `alert alert-${className}`;
         div.appendChild(document.createTextNode(message));
+
         const container = document.querySelector('.container');
         const form = document.querySelector('#book-form');
+        if (!container || !form) return;
+
         container.insertBefore(div, form);
 
-        // Vanish in 3 seconds
-        setTimeout(() => document.querySelector('.alert').remove(), 3000);
+        // Eliminar solo esta alerta después de 3 segundos
+        setTimeout(() => {
+            if (div.parentElement) div.parentElement.removeChild(div);
+        }, 3000);
     }
 
     static clearFields() {
@@ -71,11 +84,9 @@ class Store {
         let books;
         try {
             books = JSON.parse(localStorage.getItem('books')) || [];
-            if (!Array.isArray(books)) {
-                books = []; // If not an array, reset to an empty array
-            }
+            if (!Array.isArray(books)) books = [];
         } catch (error) {
-            books = []; // On parsing error, reset to an empty array
+            books = [];
         }
         return books;
     }
@@ -86,9 +97,11 @@ class Store {
         localStorage.setItem('books', JSON.stringify(books));
     }
 
-    static updateBook(updatedBook) {
+    // ✅ Corregido: permite actualizar aunque el ISBN cambie
+    static updateBook(updatedBook, oldIsbn) {
         let books = Store.getBooks();
-        books = books.map(book => book.isbn === updatedBook.isbn ? updatedBook : book);
+        const targetIsbn = oldIsbn ?? updatedBook.isbn;
+        books = books.map(book => book.isbn === targetIsbn ? updatedBook : book);
         localStorage.setItem('books', JSON.stringify(books));
     }
 
@@ -99,55 +112,73 @@ class Store {
     }
 }
 
+// ---------------- Events ----------------
+
 // Event: Display Books
 document.addEventListener('DOMContentLoaded', UI.displayBooks);
 
-// Event: Add a Book or Update an Existing Book
-document.querySelector('#book-form').addEventListener('submit', (e) => {
-    e.preventDefault(); // Prevent actual form submission
+// Event: Add or Update Book
+const form = document.querySelector('#book-form');
+if (form) {
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
 
-    const title = document.querySelector('#title').value;
-    const author = document.querySelector('#author').value;
-    const isbn = document.querySelector('#isbn').value;
+        const title = document.querySelector('#title').value;
+        const author = document.querySelector('#author').value;
+        const isbn = document.querySelector('#isbn').value;
 
-    if (title === '' || author === '' || isbn === '') {
-        UI.showAlert('Please fill in all fields', 'danger');
-    } else {
-        const editingIsbn = document.querySelector('#book-form').getAttribute('data-editing');
-
-        if (editingIsbn) {
-            // If we are updating an existing book
-            const updatedBook = new Book(title, author, isbn);
-            Store.updateBook(updatedBook);
-            UI.showAlert('Book Updated', 'success');
-        } else {
-            // Adding a new book
-            const book = new Book(title, author, isbn);
-            UI.addBookToList(book);
-            Store.addBook(book);
-            UI.showAlert('Book Added', 'success');
+        if (title === '' || author === '' || isbn === '') {
+            UI.showAlert('Please fill in all fields', 'danger');
+            return;
         }
 
-        // Clear fields and remove the editing attribute
-        UI.clearFields();
-        UI.displayBooks(); // Refresh the book list to reflect changes
-    }
-});
+        const editingIsbn = form.getAttribute('data-editing');
+
+        if (editingIsbn) {
+            // ✅ Update existing book
+            const updatedBook = new Book(title, author, isbn);
+            Store.updateBook(updatedBook, editingIsbn);
+            UI.showAlert('Book Updated', 'success');
+            UI.displayBooks();
+            UI.clearFields();
+        } else {
+            // Check duplicate ISBN
+            const existing = Store.getBooks().some(b => b.isbn === isbn);
+            if (existing) {
+                UI.showAlert('ISBN already exists', 'danger');
+                return;
+            }
+
+            // ✅ Add new book
+            const book = new Book(title, author, isbn);
+            Store.addBook(book);
+            UI.showAlert('Book Added', 'success');
+            UI.displayBooks();
+            UI.clearFields();
+        }
+    });
+}
 
 // Event: Handle Edit and Delete Actions
-document.querySelector('#book-list').addEventListener('click', (e) => {
-    if (e.target.classList.contains('delete')) {
-        // Remove book from UI
-        UI.deleteBook(e.target);
+const list = document.querySelector('#book-list');
+if (list) {
+    list.addEventListener('click', (e) => {
+        // Delete
+        const deleteBtn = e.target.closest('.delete');
+        if (deleteBtn) {
+            const row = deleteBtn.closest('tr');
+            const isbn = row?.children[2]?.textContent;
+            if (isbn) Store.removeBook(isbn);
+            if (row) row.remove();
+            UI.showAlert('Book Removed', 'success');
+            return;
+        }
 
-        // Remove book from store
-        const isbn = e.target.parentElement.previousElementSibling.textContent;
-        Store.removeBook(isbn);
-        UI.showAlert('Book Removed', 'success');
-    }
-
-    if (e.target.closest('.update')) {
-        const row = e.target.closest('tr');
-        UI.updateBookForm(row); // Populate form with existing book data for editing
-    }
-});
+        // Edit
+        const updateBtn = e.target.closest('.update');
+        if (updateBtn) {
+            const row = updateBtn.closest('tr');
+            UI.updateBookForm(row);
+        }
+    });
+}
